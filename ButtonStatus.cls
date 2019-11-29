@@ -10,54 +10,29 @@ Attribute VB_Exposed = False
 Private PrevCaption As String
 Dim ctrls As Variant
 
-Public Sub init(ByVal CommandBarName As String, ByVal CommandBarControlName As String)
+Public Sub init(CommandBarName As String, CommandBarControlName As String, Optional exactMatch As Boolean = True)
 Dim co As Integer
-  ctrls = FindAllCommandBarControls(CommandBarName, CommandBarControlName)
-  If LBound(ctrls) > UBound(ctrls) Then ctrls = CreateCommandBarControls(CommandBarName, CommandBarControlName)
+  ctrls = FindAllCommandBarControls(CommandBarName, CommandBarControlName, exactMatch)
   For co = LBound(ctrls) To UBound(ctrls)
-    ctrls(co).Tag = ctrls(co).Caption
+    ctrls(co).Tag = ctrls(co).caption
   Next co
 End Sub
-Public Sub SetCaption(ByVal s As String)
+Public Sub setDefaultCaption(s As String)
 Dim co As Integer
-Dim ctrl As CommandBarButton
   For co = LBound(ctrls) To UBound(ctrls)
-    Set ctrl = ctrls(co)
-    ctrl.Caption = ctrl.Tag & "-" & s
-    ctrl.Enabled = True
-    ' ctrl.SetFocus
-    ctrl.Enabled = False
-    ctrl.Visible = False
-    ctrl.Visible = True
-    DoEvents
+    ctrls(co).Tag = s
+    ctrls(co).caption = s
   Next co
 End Sub
-Private Function CreateCommandBarControls(ByVal CommandBarName As String, ByVal CommandBarControlName As String) As Variant
-Dim ctrls As Variant
-ctrls = Array()
-Dim ex As Explorer
-Dim bar As CommandBar
-Dim co As CommandBarControl
-
-  For Each ex In Application.Explorers
-    Set bar = Nothing
-    On Error Resume Next
-    Set bar = ex.CommandBars(CommandBarName)
-    On Error GoTo 0
-    If (bar Is Nothing) Then
-      Set bar = ex.CommandBars.add(name:=CommandBarName)
-      bar.Visible = True
-    End If
-    Set co = bar.Controls.add(Type:=msoControlButton)
-    co.Tag = CommandBarControlName
-    co.Caption = CommandBarControlName
-    ReDim Preserve ctrls(UBound(ctrls) + 1)
-    Set ctrls(UBound(ctrls)) = co
-  Next ex
-  CreateCommandBarControls = ctrls
-
-End Function
-Private Function FindAllCommandBarControls(ByVal CommandBarName As String, ByVal CommandBarControlName As String) As Variant
+Public Sub SetCaption(s As String)
+Dim co As Integer
+  If IsEmpty(ctrls) Then Exit Sub
+  For co = LBound(ctrls) To UBound(ctrls)
+    ctrls(co).caption = ctrls(co).Tag & "-" & s
+    ctrls(co).Enabled = False
+  Next co
+End Sub
+Private Function FindAllCommandBarControls(CommandBarName As String, CommandBarControlName As String, Optional exactMatch As Boolean = True) As Variant
 On Error Resume Next
 Dim ctrls As Variant
 ctrls = Array()
@@ -70,13 +45,22 @@ Dim co As CommandBarControl
     Set bar = ex.CommandBars(CommandBarName)
     On Error GoTo 0
     If Not (bar Is Nothing) Then
-      Set co = Nothing
-      On Error Resume Next
-      Set co = bar.Controls(CommandBarControlName)
-      On Error GoTo 0
-      If Not (co Is Nothing) Then
-        ReDim Preserve ctrls(UBound(ctrls) + 1)
-        Set ctrls(UBound(ctrls)) = co
+      If exactMatch Then
+        Set co = Nothing
+        On Error Resume Next
+        Set co = bar.Controls(CommandBarControlName)
+        On Error GoTo 0
+        If Not (co Is Nothing) Then
+          ReDim Preserve ctrls(UBound(ctrls) + 1)
+          Set ctrls(UBound(ctrls)) = co
+        End If
+      Else 'use like ...
+        For Each co In bar.Controls
+          If co.caption Like "*" & CommandBarControlName & "*" Then
+            ReDim Preserve ctrls(UBound(ctrls) + 1)
+            Set ctrls(UBound(ctrls)) = co
+          End If
+        Next co
       End If
     End If
   Next ex
@@ -86,8 +70,9 @@ End Function
 Public Sub Class_Terminate()
 'restore initial command caption
   Dim co As Integer
+  If IsEmpty(ctrls) Then Exit Sub
   For co = LBound(ctrls) To UBound(ctrls)
-    ctrls(co).Caption = ctrls(co).Tag
+    ctrls(co).caption = ctrls(co).Tag
     ctrls(co).Enabled = True
   Next co
 End Sub

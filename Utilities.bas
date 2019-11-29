@@ -10,14 +10,14 @@ proc_err:
   Resume
 proc:
   If fld Is Nothing Then
-    trace.trace context, "DELETED", miv.Subject & "(" & miv.CreationTime & ")"
+    trace.trace context, "DELETED", miv.subject & "(" & miv.CreationTime & ")"
     trace.trace context, "FROM-->", miv.parent.folderPath
     miv.delete
   ElseIf miv.parent.folderPath = fld.folderPath Then
-    trace.trace context, "NOT MOVED ", miv.Subject & "(" & miv.CreationTime & ")"
+    trace.trace context, "NOT MOVED ", miv.subject & "(" & miv.CreationTime & ")"
     trace.trace context, "ON SAME FOLDER->", miv.parent.folderPath
   Else
-    trace.trace context, "MOVED ", miv.Subject & "(" & miv.CreationTime & ")"
+    trace.trace context, "MOVED ", miv.subject & "(" & miv.CreationTime & ")"
     trace.trace context, "FROM->", miv.parent.folderPath
     trace.trace context, "--->TO", fld.folderPath
     miv.Move fld
@@ -61,20 +61,60 @@ Dim i As Integer
     If specialChars = "" Then
         specialChars = ":|{}\/%?*^&<>""'"
     End If
-    Dim name As Variant: name = Split(mi.Sender.name, "=")
-    MakeFileName = Format(mi.SentOn, "yyyy-mm-dd hh.mm.ss") & " [" & name(UBound(name)) & "] " & mi.Subject
+    Dim name As Variant: name = Split(mi.sender.name, "=")
+    MakeFileName = Format(mi.SentOn, "yyyy-mm-dd hh.mm.ss") & " [" & name(UBound(name)) & "] " & mi.subject
     For i = 1 To Len(specialChars)
         MakeFileName = Replace(MakeFileName, Mid(specialChars, i, 1), "_")
     Next i
 End Function
 
-Public Function TruncateFileName(ByVal filename As String, Optional ByVal maxlength As Integer = 255) As String
-    If Len(filename) <= maxlength Then
-        TruncateFileName = filename
+Public Function TruncateFileName(ByVal FileName As String, Optional ByVal maxlength As Integer = 255) As String
+    If Len(FileName) <= maxlength Then
+        TruncateFileName = FileName
         Exit Function
     End If
-    Dim chunks As Variant: chunks = Split(filename, ".")
+    Dim chunks As Variant: chunks = Split(FileName, ".")
     Dim ext As String: ext = "." & chunks(UBound(chunks))
     ReDim Preserve chunks(UBound(chunks) - 1)
     TruncateFileName = Left(Join(chunks, "."), maxlength - Len(ext)) & ext
 End Function
+Public Function EnsureFolderExists(parentFolder As Outlook.Folder, folderPath As String) As Outlook.Folder
+Dim a As Variant
+Dim i As Integer
+Dim parentPath As String
+
+Set EnsureFolderExists = parentFolder
+
+a = Split(folderPath, "\")
+For i = 0 To UBound(a)
+  If a(i) <> "" Then
+    On Error Resume Next
+    Set EnsureFolderExists = EnsureFolderExists.folders(a(i))
+    If Err.Number <> 0 Then
+      On Error GoTo 0
+      Set EnsureFolderExists = EnsureFolderExists.folders.add(a(i))
+    End If
+  End If
+Next i
+End Function
+
+Public Sub BubbleSort(list As Variant)
+'   Sorts an array using bubble sort algorithm
+    Dim First As Integer, Last As Long
+    Dim i As Long, j As Long
+    Dim Temp As Variant
+    
+    First = LBound(list)
+    Last = UBound(list)
+    For i = First To Last - 1
+        For j = i + 1 To Last
+            If list(i) > list(j) Then
+                Temp = list(j)
+                list(j) = list(i)
+                list(i) = Temp
+            End If
+        Next j
+    Next i
+End Sub
+
+

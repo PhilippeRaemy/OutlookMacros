@@ -19,13 +19,13 @@ End Property
 Public Property Get Attach() As String
   Attach = lAttach
 End Property
-Public Function contains(ByVal s As MailSignature) As Boolean
+Public Function contains(s As MailSignature) As Boolean
   contains = (Me.CompareTo(s) > 0)
 End Function
-Public Function isContainedIn(ByVal s As MailSignature) As Boolean
+Public Function isContainedIn(s As MailSignature) As Boolean
   isContainedIn = (Me.CompareTo(s) < 0)
 End Function
-Public Function CompareTo(ByVal s As MailSignature) As Integer
+Public Function CompareTo(s As MailSignature) As Integer
   If InStr(1, lBody, s.body, vbTextCompare) > 0 Then
     CompareTo = 1
   ElseIf InStr(1, s.body, lBody, vbTextCompare) > 0 Then
@@ -45,12 +45,12 @@ Public Function CompareTo(ByVal s As MailSignature) As Integer
     End If
   End If
 End Function
-Public Sub init(ByVal mi As MailItem)
+Public Sub init(mi As MailItem)
   lBody = mailBodySignature(mi)
   lAttach = mailAttachmentsSignature(mi)
   Set lMi = mi
 End Sub
-Private Function mailAttachmentsSignature(ByVal mi As MailItem) As String
+Private Function mailAttachmentsSignature(mi As MailItem) As String
 Dim a As Attachment
 mailAttachmentsSignature = ""
 For Each a In mi.Attachments
@@ -59,7 +59,7 @@ For Each a In mi.Attachments
     a.Class & ":" & a.Position & ":" & a.DisplayName
 Next a
 End Function
-Private Function mailBodySignature(ByVal mi As MailItem) As String
+Private Function mailBodySignature(mi As MailItem) As String
   mailBodySignature = Replace(Replace(Replace(Replace(Replace(mi.body _
     , vbCrLf, "") _
     , vbCr, "") _
@@ -68,5 +68,5 @@ Private Function mailBodySignature(ByVal mi As MailItem) As String
     , " ", "")
 End Function
 Public Property Get ExtendedSubject() As String
-  ExtendedSubject = "«" & lMi.Subject & "»(" & lMi.SenderName & ", " & lMi.SentOn & ")"
+  ExtendedSubject = "«" & lMi.subject & "»(" & lMi.SenderName & ", " & lMi.SentOn & ")"
 End Property

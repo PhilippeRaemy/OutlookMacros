@@ -7,20 +7,20 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
-Public countMails As Integer
-Public countFiles As Integer
 Public countDeleted As Integer
+Public countFiles As Integer
+Public countMails As Integer
 
 Public Function add(other As ExportStatus) As ExportStatus
-    Set add = New ExportStatus
-    add.countMails = Me.countMails + other.countMails
-    add.countFiles = Me.countFiles + other.countFiles
-    add.countDeleted = Me.countDeleted + other.countDeleted
+Set add = New ExportStatus
+    add.countDeleted = countDeleted + other.countDeleted
+    add.countFiles = countFiles + other.countFiles
+    add.countFiles = countMails + other.countMails
+    add.countMails = countMails + other.countMails
 End Function
 
 Public Function ToString() As String
-    ToString = _
-        "Count Mails = " & countMails & ", " & _
-        "Count Files = " & countFiles & ", " & _
-        "Count Deleted = " & countDeleted
+    ToString = "Deleted mails: " & countDeleted & _
+             ", Exported mails: " & countMails & _
+             ", Exported files: " & countFiles
 End Function
